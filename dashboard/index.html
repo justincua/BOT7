@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>CuaX Trader</title>
+<style>
+:root{
+  --bg:#05070c;
+  --bg2:#07111d;
+  --glass:rgba(12,22,34,.72);
+  --glass2:rgba(16,31,46,.82);
+  --card:rgba(13,24,36,.86);
+  --line:rgba(150,184,220,.16);
+  --line2:rgba(255,138,28,.28);
+  --text:#f5f8ff;
+  --muted:#92a4bb;
+  --soft:#5f7188;
+  --orange:#ff8a1c;
+  --orange2:#ffbd5c;
+  --cyan:#4de3ff;
+  --blue:#7aa7ff;
+  --green:#36e684;
+  --red:#ff5870;
+  --yellow:#ffd166;
+  --purple:#a586ff;
+  --shadow:0 26px 90px rgba(0,0,0,.45);
+  --radius:24px;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  overflow:auto;
+  color:var(--text);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  background:
+    radial-gradient(circle at 15% 5%,rgba(255,138,28,.23),transparent 27%),
+    radial-gradient(circle at 87% 8%,rgba(77,227,255,.18),transparent 29%),
+    radial-gradient(circle at 48% 112%,rgba(165,134,255,.12),transparent 34%),
+    linear-gradient(180deg,#05070c 0%,#07111d 55%,#03050a 100%);
+}
+body:before{
+  content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);
+  background-size:36px 36px;opacity:.18;
+  mask-image:linear-gradient(#000,transparent 88%);
+}
+body:after{
+  content:"";position:fixed;inset:-30%;z-index:-1;pointer-events:none;
+  background:conic-gradient(from 170deg,transparent,rgba(255,138,28,.12),transparent,rgba(77,227,255,.1),transparent);
+  animation:slowSpin 22s linear infinite;filter:blur(50px);opacity:.45;
+}
+@keyframes slowSpin{to{transform:rotate(1turn)}}
+@keyframes pulseGlow{0%,100%{box-shadow:0 0 0 rgba(255,138,28,0)}50%{box-shadow:0 0 34px rgba(255,138,28,.18)}}
+@keyframes floatUp{0%{opacity:0;transform:translateY(18px) scale(.98)}100%{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes scanMove{0%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
+@keyframes scanCircle{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+@keyframes popIn{0%{opacity:0;transform:translateX(22px) scale(.92)}100%{opacity:1;transform:translateX(0) scale(1)}}
+@keyframes popOut{to{opacity:0;transform:translateX(18px) scale(.96)}}
+@keyframes activeLine{0%{background-position:0 0}100%{background-position:140px 0}}
+.app{min-height:100dvh;width:100vw;display:grid;grid-template-rows:auto 1fr;min-width:0}
+.topbar{
+  height:auto;min-height:82px;display:grid;grid-template-columns:320px 1fr auto;gap:14px;align-items:center;
+  padding:12px 14px 11px;border-bottom:1px solid rgba(255,255,255,.08);
+  background:linear-gradient(180deg,rgba(4,8,13,.86),rgba(4,8,13,.68));
+  backdrop-filter:blur(18px);box-shadow:0 8px 50px rgba(0,0,0,.3);z-index:20;
+}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.logoMark{width:54px;height:54px;border-radius:19px;position:relative;display:grid;place-items:center;flex:0 0 auto;background:linear-gradient(135deg,#ff8a1c,#ffbd5c 45%,#4de3ff);box-shadow:0 18px 38px rgba(255,138,28,.2),inset 0 0 0 1px rgba(255,255,255,.35);overflow:hidden}.logoMark:after{content:"";position:absolute;inset:-40%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.42),transparent);animation:scanMove 2.8s linear infinite}.logoMark b{position:relative;color:#07111d;font-size:22px;letter-spacing:-2px;font-weight:1000}
+.brandText{min-width:0}.brandText h1{margin:0;font-size:clamp(28px,3vw,46px);line-height:.9;letter-spacing:-1.4px;font-weight:1000;background:linear-gradient(90deg,#fff,#ffbd5c,#4de3ff);-webkit-background-clip:text;color:transparent}.brandText p{margin:7px 0 0;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.statusStrip{display:flex;align-items:center;gap:8px;min-width:0;overflow:hidden;flex-wrap:wrap}.chip{position:relative;display:flex;align-items:center;gap:6px;min-height:34px;padding:8px 11px;border-radius:999px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.09);color:var(--muted);font-size:12px;white-space:nowrap}.chip b{color:#fff}.chip.orange{border-color:rgba(255,138,28,.34);color:#ffc68c}.chip.green{border-color:rgba(54,230,132,.32);color:#9df5bf}.chip.cyan{border-color:rgba(77,227,255,.3);color:#a4f4ff}.dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 16px var(--green);animation:pulseDot 1.4s ease-in-out infinite}@keyframes pulseDot{50%{opacity:.45;transform:scale(.78)}}
+.controls{display:flex;align-items:end;gap:8px;justify-content:flex-end}.field{display:grid;gap:4px}.field label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--soft);font-weight:800}input,select,button{font:inherit}input,select{height:36px;border:1px solid rgba(255,255,255,.12);background:rgba(3,8,13,.72);color:#fff;border-radius:13px;padding:0 10px;outline:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.02)}input:focus,select:focus{border-color:rgba(77,227,255,.48);box-shadow:0 0 0 3px rgba(77,227,255,.09)}.strategyInput{min-width:188px}.smallInput{width:86px}.btn{height:36px;border:0;border-radius:13px;padding:0 13px;font-weight:1000;cursor:pointer;color:#08101a;background:linear-gradient(135deg,var(--orange),var(--orange2));box-shadow:0 14px 28px rgba(255,138,28,.22);transition:.18s transform,.18s filter}.btn:hover{transform:translateY(-1px);filter:saturate(1.1)}.btn.secondary{color:#eaf4ff;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);box-shadow:none}.btn.red{color:white;background:linear-gradient(135deg,var(--red),#ff8a1c)}
+.workspace{min-height:0;display:grid;grid-template-columns:clamp(260px,16vw,300px) minmax(620px,1fr) clamp(310px,20vw,370px);gap:12px;padding:12px;overflow:visible;align-items:start}.pane{min-height:0;overflow:visible;display:grid;gap:12px;align-content:start;padding-bottom:8px;scrollbar-width:thin;scrollbar-color:rgba(255,138,28,.5) transparent}.pane::-webkit-scrollbar{width:7px}.pane::-webkit-scrollbar-thumb{background:rgba(255,138,28,.4);border-radius:999px}.panel{position:relative;border:1px solid rgba(255,255,255,.1);border-radius:var(--radius);background:linear-gradient(180deg,rgba(17,31,47,.8),rgba(7,14,23,.78));box-shadow:var(--shadow);padding:14px;overflow:hidden;animation:floatUp .35s ease both;min-width:0}.panel:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 0% 0%,rgba(255,138,28,.12),transparent 36%),radial-gradient(circle at 100% 0%,rgba(77,227,255,.08),transparent 34%);pointer-events:none}.panel>*{position:relative}.panelTitle{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.panelTitle h2,.panelTitle h3{margin:0;font-size:13px;text-transform:uppercase;letter-spacing:.1em;color:#cfe0f2}.panelTitle .sub{font-size:11px;color:var(--soft)}
+.statGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{position:relative;min-height:76px;padding:12px;border:1px solid rgba(255,255,255,.09);border-radius:19px;background:rgba(255,255,255,.045);overflow:hidden}.stat:after{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent)}.stat span{display:block;color:var(--muted);font-size:11px}.stat b{display:block;margin-top:6px;font-size:22px;letter-spacing:-.6px}.stat small{display:block;margin-top:4px;color:var(--soft)}.green{color:var(--green)!important}.red{color:var(--red)!important}.orange{color:var(--orange)!important}.cyan{color:var(--cyan)!important}.yellow{color:var(--yellow)!important}.purple{color:var(--purple)!important}.muted{color:var(--muted)}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.signalBox{min-height:190px;display:grid;align-content:center}.signalLabel{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;font-weight:900}.signalBig{margin:10px 0 0;font-size:clamp(44px,4.2vw,70px);line-height:.86;font-weight:1000;letter-spacing:-3px}.signalBig .arrow{display:block;color:var(--orange);font-size:.72em;margin-top:6px}.configRows{display:grid;gap:0}.line{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.075)}.line:last-child{border-bottom:0}.line span{color:var(--muted)}.line b{text-align:right}.warningBox{padding:12px;border-radius:18px;border:1px solid rgba(255,209,102,.22);background:rgba(255,209,102,.075);color:#ffe5a5;font-size:13px;line-height:1.45}.riskBox{padding:12px;border-radius:18px;border:1px solid rgba(255,88,112,.24);background:rgba(255,88,112,.08);color:#ffd0d7;font-size:13px;line-height:1.45}
+.radarPanel{min-height:250px}.radarWrap{height:190px;display:grid;place-items:center;position:relative;border-radius:22px;background:radial-gradient(circle at center,rgba(77,227,255,.08),rgba(0,0,0,.1));border:1px solid rgba(77,227,255,.12);overflow:hidden}.radar{width:178px;height:178px;border-radius:50%;position:relative;border:1px solid rgba(77,227,255,.32);background:repeating-radial-gradient(circle,rgba(77,227,255,.1) 0 1px,transparent 1px 25px),radial-gradient(circle,rgba(77,227,255,.08),transparent 68%)}.radar:before{content:"";position:absolute;inset:50% 50% 0 0;transform-origin:100% 0;background:linear-gradient(45deg,rgba(77,227,255,.65),transparent 62%);clip-path:polygon(0 0,100% 0,100% 100%);animation:scanCircle 2.2s linear infinite}.radar:after{content:"";position:absolute;left:50%;top:50%;width:9px;height:9px;border-radius:50%;background:var(--orange);box-shadow:0 0 22px var(--orange)}.orbitDot{position:absolute;border-radius:50%;background:var(--green);box-shadow:0 0 18px var(--green)}.orbitDot.a{width:8px;height:8px;left:39%;top:31%;animation:pulseDot 1s infinite}.orbitDot.b{width:6px;height:6px;left:62%;top:58%;animation:pulseDot 1.3s infinite}.orbitDot.c{width:7px;height:7px;left:55%;top:24%;background:var(--yellow);box-shadow:0 0 18px var(--yellow);animation:pulseDot 1.7s infinite}.scanText{position:absolute;left:14px;right:14px;bottom:12px;display:flex;justify-content:space-between;color:var(--muted);font-size:12px}.scannerLine{height:3px;border-radius:999px;background:linear-gradient(90deg,transparent,var(--orange),var(--cyan),transparent);background-size:140px 100%;animation:activeLine 1.15s linear infinite;margin-top:12px;opacity:.9}
+.pipeline{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}.stage{position:relative;min-height:116px;padding:12px;border-radius:21px;border:1px solid rgba(255,255,255,.11);background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.025));overflow:hidden;transition:.22s transform,.22s border,.22s background}.stage:before{content:"";position:absolute;left:-80%;top:0;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.13),transparent);transform:skewX(-14deg)}.stage.watch:before,.stage.pass:before{animation:scanMove 1.7s ease-in-out infinite}.stage.pass{border-color:rgba(54,230,132,.42);background:linear-gradient(180deg,rgba(54,230,132,.12),rgba(255,255,255,.025));box-shadow:inset 0 0 30px rgba(54,230,132,.06)}.stage.watch{border-color:rgba(77,227,255,.42);background:linear-gradient(180deg,rgba(77,227,255,.11),rgba(255,255,255,.025));animation:pulseGlow 1.6s ease-in-out infinite}.stage.warn{border-color:rgba(255,209,102,.46);background:linear-gradient(180deg,rgba(255,209,102,.11),rgba(255,255,255,.025))}.stage.fail{border-color:rgba(255,88,112,.5);background:linear-gradient(180deg,rgba(255,88,112,.13),rgba(255,255,255,.025))}.stageTop{display:flex;justify-content:space-between;gap:8px;align-items:center}.stageNum{font-size:11px;color:var(--soft);font-weight:900}.stageIcon{width:28px;height:28px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08)}.stageName{margin-top:8px;font-size:15px;font-weight:1000}.stageState{margin-top:4px;font-size:11px;text-transform:uppercase;letter-spacing:.12em;font-weight:900}.stageDetail{margin-top:7px;font-size:11px;color:#cad8e8;line-height:1.35}.priceGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.priceCard{position:relative;min-height:96px;padding:16px;border-radius:22px;background:rgba(4,12,19,.72);border:1px solid rgba(255,255,255,.1);text-align:center;overflow:hidden}.priceCard:before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,var(--orange),var(--cyan));opacity:.6}.priceCard span{display:block;color:var(--muted);font-size:12px}.priceCard b{display:block;margin-top:8px;font-size:30px;letter-spacing:-.9px}.lockGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.mini{padding:12px;border-radius:18px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.09);min-height:74px}.mini span{font-size:11px;color:var(--muted)}.mini b{display:block;margin-top:6px;font-size:19px}
+.chart{height:180px;border:1px solid rgba(255,255,255,.09);border-radius:20px;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.015));overflow:hidden}svg{display:block;width:100%;height:100%}.feed,.logs{display:grid;gap:8px;max-height:240px;overflow:auto;scrollbar-width:thin}.feedrow,.logrow{position:relative;padding:10px;border:1px solid rgba(255,255,255,.08);border-radius:17px;background:rgba(255,255,255,.042);font-size:12px;animation:floatUp .25s ease both}.feedrow{display:grid;grid-template-columns:1fr auto;gap:8px}.badge{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:1000;letter-spacing:.04em;background:rgba(255,255,255,.07);color:#cdd9e7}.badge.buy{background:rgba(54,230,132,.13);color:#a7ffc8}.badge.sell{background:rgba(255,88,112,.13);color:#ffadb8}.badge.arb,.badge.hedge{background:rgba(255,138,28,.15);color:#ffc68c}.badge.resolved{background:rgba(77,227,255,.13);color:#a4f4ff}.badge.info{background:rgba(165,134,255,.13);color:#d4c9ff}.depthbar{height:9px;border-radius:999px;background:rgba(0,0,0,.24);overflow:hidden}.depthbar span{display:block;width:0;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--orange),var(--yellow));transition:width .3s ease}.timeline{display:grid;gap:9px}.timelineItem{display:grid;grid-template-columns:34px 1fr;gap:9px;align-items:start}.timelineDot{width:28px;height:28px;border-radius:12px;display:grid;place-items:center;background:rgba(77,227,255,.1);border:1px solid rgba(77,227,255,.24);color:var(--cyan);font-weight:1000}.timelineBody{padding-bottom:9px;border-bottom:1px solid rgba(255,255,255,.07)}.timelineBody b{display:block}.timelineBody span{display:block;margin-top:3px;font-size:12px;color:var(--muted)}
+.processStack{position:fixed;right:16px;top:94px;z-index:50;display:grid;gap:10px;width:min(390px,calc(100vw - 32px));pointer-events:none}.processToast{position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.14);border-radius:18px;background:linear-gradient(135deg,rgba(11,20,31,.95),rgba(21,36,51,.92));box-shadow:0 20px 55px rgba(0,0,0,.38);padding:12px 13px;animation:popIn .22s ease both}.processToast.out{animation:popOut .25s ease forwards}.processToast:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--orange)}.processToast.pass:before{background:var(--green)}.processToast.watch:before{background:var(--cyan)}.processToast.warn:before{background:var(--yellow)}.processToast.fail:before{background:var(--red)}.processToast h4{margin:0;font-size:13px}.processToast p{margin:5px 0 0;color:var(--muted);font-size:12px;line-height:1.35}.toast{position:fixed;left:16px;bottom:16px;z-index:55;max-width:420px;display:none;padding:12px 14px;border-radius:18px;border:1px solid rgba(255,138,28,.36);background:rgba(8,15,24,.94);box-shadow:var(--shadow);color:#fff}.tabs{display:none;position:fixed;left:10px;right:10px;bottom:10px;z-index:40;gap:8px}.tabs button{flex:1;height:44px;border-radius:17px;color:#fff;font-weight:1000;background:rgba(10,18,29,.88);border:1px solid rgba(255,255,255,.13);box-shadow:0 10px 35px rgba(0,0,0,.3)}
+/* V7 FIX: tránh chồng chéo trên Railway/webview nhỏ */
+.centerPane,.leftPane,.rightPane{align-self:start;contain:layout paint;}
+.centerPane .panel,.leftPane .panel,.rightPane .panel{width:100%;}
+.panel + .panel{margin-top:0;}
+.lockGrid,.priceGrid,.statGrid,.pipeline{min-width:0;}
+.mini,.priceCard,.stat,.stage{min-width:0;}
+.mini b,.priceCard b,.stat b,.stageName,.stageDetail,.line b{overflow-wrap:anywhere;word-break:break-word;}
+@media(max-height:820px) and (min-width:1081px){
+  .topbar{min-height:70px;padding:8px 10px;gap:10px;}
+  .logoMark{width:44px;height:44px;border-radius:15px}.brandText h1{font-size:34px}.brandText p{display:none}
+  .chip{min-height:30px;padding:6px 9px;font-size:11px}.controls input,.controls select,.btn{height:32px;border-radius:11px}.field label{font-size:9px}
+  .workspace{gap:10px;padding:10px;grid-template-columns:280px minmax(640px,1fr) 340px;}
+  .panel{padding:12px;border-radius:20px}.panelTitle{margin-bottom:9px}.panelTitle h2,.panelTitle h3{font-size:12px}
+  .signalBox{min-height:150px}.signalBig{font-size:48px}.statGrid{gap:8px}.stat{min-height:68px;padding:10px}.stat b{font-size:20px}
+  .radarPanel{min-height:auto}.radarWrap{height:165px}.radar{width:132px;height:132px}.pipeline{gap:8px}.stage{min-height:100px;padding:10px}.stageIcon{width:24px;height:24px}.stageName{font-size:14px}.stageDetail{font-size:10.5px;line-height:1.25}
+  .lockGrid,.priceGrid{gap:8px}.mini{min-height:62px;padding:10px}.mini b{font-size:16px}.priceCard{min-height:82px;padding:12px}.priceCard b{font-size:26px}
+  .chart{height:150px}.feed,.logs{max-height:190px}.line{padding:8px 0;font-size:13px}
+}
+@media(max-width:1540px) and (min-width:1081px){
+  .topbar{grid-template-columns:280px 1fr;}
+  .controls{grid-column:1/-1;justify-content:flex-start;overflow:visible;flex-wrap:wrap;}
+  .workspace{grid-template-columns:270px minmax(560px,1fr) 330px;}
+  .pipeline{grid-template-columns:repeat(3,minmax(0,1fr));}
+}
+
+@media(max-width:1280px) and (min-width:1081px){.topbar{grid-template-columns:1fr}.controls{justify-content:flex-start;overflow:auto;padding-bottom:2px}.workspace{grid-template-columns:260px minmax(520px,1fr) 320px}.pipeline{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:1080px){body{overflow:auto}.app{height:auto;min-height:100dvh}.workspace{height:auto;overflow:visible;display:block;padding-bottom:70px}.pane{display:none;overflow:visible}.pane.active{display:grid}.centerPane{margin:0}.tabs{display:flex}.pipeline{grid-template-columns:repeat(2,1fr)}.priceGrid,.lockGrid{grid-template-columns:repeat(2,1fr)}.processStack{top:auto;bottom:66px;right:10px;left:10px;width:auto}.topbar{position:sticky;top:0}.brandText p{white-space:normal}.controls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:end}.strategyField{grid-column:1/-1}.strategyInput{width:100%}}
+@media(max-width:590px){.topbar{padding:10px}.brand{align-items:flex-start}.logoMark{width:48px;height:48px;border-radius:16px}.brandText h1{font-size:32px}.statusStrip{gap:6px}.chip{font-size:11px;min-height:30px;padding:7px 9px}.controls{grid-template-columns:1fr 1fr}.field.fullMobile{grid-column:1/-1}.btn{width:100%}.workspace{padding:10px}.statGrid,.priceGrid,.lockGrid,.pipeline{grid-template-columns:1fr}.signalBig{font-size:48px}.priceCard b{font-size:32px}.panel{border-radius:20px}.chart{height:190px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="logoMark"><b>CX</b></div>
+      <div class="brandText">
+        <h1>CuaX Trader</h1>
+        <p>Hybrid GAP Arb • 6-Layer Engine • Smart Hedge • Railway Ready</p>
+      </div>
+    </div>
+    <div class="statusStrip">
+      <div class="chip orange"><span class="dot"></span>Chế độ <b id="mode">SIM</b></div>
+      <div class="chip cyan">Tài sản <b id="asset">BTC • 5m</b></div>
+      <div class="chip">Strategy <b id="strategyPill">gap-six-layer-arb</b></div>
+      <div class="chip green">Bot <b id="status">Đang tải</b></div>
+      <div class="chip">Uptime <b id="uptime">00:00:00</b></div>
+    </div>
+    <div class="controls">
+      <div class="field strategyField fullMobile"><label>Strategy</label><input class="strategyInput" id="strategyInput" value="gap-six-layer-arb"></div>
+      <div class="field"><label>Rounds</label><input class="smallInput" id="roundsInput" value="unlimited"></div>
+      <div class="field"><label>Slot</label><input class="smallInput" id="slotInput" value="0"></div>
+      <div class="field"><label>Mode</label><select id="prodInput"><option value="false">SIM</option><option value="true">PROD</option></select></div>
+      <button class="btn" onclick="startBot()">START</button>
+      <button class="btn secondary" onclick="pauseBot()">PAUSE</button>
+      <button class="btn secondary" onclick="resumeBot()">RESUME</button>
+      <button class="btn red" onclick="stopBot()">STOP</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="pane active leftPane" id="leftPane">
+      <section class="panel signalBox">
+        <div class="panelTitle"><h3>Logic bản của bạn</h3><span class="sub">GAP ngược hướng</span></div>
+        <div class="signalLabel">Signal hiện tại</div>
+        <div class="signalBig"><span id="gapSignalBig">--</span><span class="arrow" id="gapActionBig">→ chờ</span></div>
+        <div class="scannerLine"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panelTitle"><h3>Ví / Phiên</h3><span class="sub" id="pnlMode">Realtime</span></div>
+        <div class="statGrid">
+          <div class="stat"><span>Vốn realtime</span><b id="balance">$0.00</b><small>Initial + PNL live</small></div>
+          <div class="stat"><span>Tiền mặt khả dụng</span><b id="available">$0.00</b></div>
+          <div class="stat"><span>PNL realtime</span><b id="pnl">$0.00</b><small>Tạm tính live</small></div>
+          <div class="stat"><span>Lỗ phiên</span><b id="lossCounter">$0.00</b></div>
+          <div class="stat"><span>Winrate</span><b id="winrate">0%</b></div>
+          <div class="stat"><span>Cycles</span><b id="cycles">0</b></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panelTitle"><h3>Cấu hình đang chạy</h3><span class="sub">ENV</span></div>
+        <div class="configRows">
+          <div class="line"><span>Min Edge</span><b id="minEdge">--</b></div>
+          <div class="line"><span>Shares mục tiêu</span><b id="targetShares">--</b></div>
+          <div class="line"><span>Vốn đã dùng</span><b id="capitalUsed">--</b></div>
+          <div class="line"><span>Latency fill</span><b id="latency">--</b></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panelTitle"><h3>PNL Curve</h3><span class="sub">equity</span></div>
+        <div class="chart"><svg id="equityChart" viewBox="0 0 800 220" preserveAspectRatio="none"></svg></div>
+      </section>
+    </aside>
+
+    <section class="pane active centerPane" id="centerPane">
+      <section class="panel radarPanel">
+        <div class="panelTitle"><h2>Trung tâm quét CuaX</h2><span class="sub" id="scanSub">Đang scan market realtime</span></div>
+        <div class="radarWrap">
+          <div class="radar"><span class="orbitDot a"></span><span class="orbitDot b"></span><span class="orbitDot c"></span></div>
+          <div class="scanText"><span id="scanMode">SCAN • DETECT • VALIDATE</span><span id="clockText">--:--:--</span></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panelTitle"><h2>6-Layer Execution Pipeline</h2><span class="sub">hiện popup khi từng bước đổi trạng thái</span></div>
+        <div class="pipeline" id="pipeline"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panelTitle"><h2>Trạng thái khóa lời</h2><span class="sub">YES + NO &lt; 1.00</span></div>
+        <div class="lockGrid">
+          <div class="mini"><span>GAP SIDE</span><b id="gapSignal">--</b></div>
+          <div class="mini"><span>First-leg</span><b id="firstLeg">--</b></div>
+          <div class="mini"><span>Giá first</span><b id="firstPrice">--</b></div>
+          <div class="mini"><span>Hedge cần mua</span><b id="hedgeSide">--</b></div>
+          <div class="mini"><span>Giá hedge tối đa</span><b id="hedgeMax">--</b></div>
+        </div>
+        <div style="height:10px"></div>
+        <div class="priceGrid">
+          <div class="priceCard"><span>BUY / UP Ask</span><b id="yesAsk">--</b></div>
+          <div class="priceCard"><span>SELL / DOWN Ask</span><b id="noAsk">--</b></div>
+          <div class="priceCard"><span>SUM hiện tại</span><b id="combined">--</b></div>
+          <div class="priceCard"><span>EDGE hiện tại</span><b id="edgeBox">--</b></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panelTitle"><h2>Smart Hedge / Rescue</h2><span class="sub">bắt giá rơi sâu + cứu gần hết giờ</span></div>
+        <div class="statGrid">
+          <div class="stat"><span>Mode Arb</span><b id="arbMode">--</b></div>
+          <div class="stat"><span>Hedge Ask</span><b id="hedgeAsk">--</b></div>
+          <div class="stat"><span>SUM khi khóa</span><b id="lockSum">--</b></div>
+          <div class="stat"><span>Edge đã khóa</span><b id="lockedEdge">--</b></div>
+          <div class="stat"><span>PNL lệnh realtime</span><b id="livePnl">--</b></div>
+          <div class="stat"><span>Đáy hedge / Hồi</span><b><span id="lowestHedge">--</span> / <span id="hedgeRebound">--</span></b></div>
+        </div>
+        <div style="height:10px"></div>
+        <div class="configRows">
+          <div class="line"><span>Smart trigger</span><b id="smartTrigger">--</b></div>
+          <div class="line"><span>Hành động cuối</span><b id="lastAction">--</b></div>
+          <div class="line"><span>Lý do chưa vào</span><b id="waitReason">--</b></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panelTitle"><h2>Feed giao dịch / Arbitrage</h2><span class="sub">giới hạn log để giảm lag</span></div>
+        <div class="feed" id="feed"></div>
+      </section>
+      <div class="riskBox" id="riskNote">Lưu ý: khi mới mua first-leg thì chưa phải risk-free. Chỉ an toàn hơn khi đã mua đủ 2 phe cùng shares và tổng giá dưới 1.00.</div>
+    </section>
+
+    <aside class="pane active rightPane" id="rightPane">
+      <section class="panel">
+        <div class="panelTitle"><h3>Market đang chạy</h3><span class="sub">5M cycle</span></div>
+        <div class="configRows" id="marketBox"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panelTitle"><h3>Orderbook BUY / SELL</h3><span class="sub">ask / bid</span></div>
+        <div class="configRows">
+          <div class="line"><span>BUY Ask / Bid</span><b><span id="obUpAsk">--</span> / <span id="obUpBid">--</span></b></div>
+          <div class="line"><span>BUY Liquidity</span><b id="obUpLiq">--</b></div><div class="depthbar"><span id="upDepthBar"></span></div>
+          <div class="line"><span>SELL Ask / Bid</span><b><span id="obDownAsk">--</span> / <span id="obDownBid">--</span></b></div>
+          <div class="line"><span>SELL Liquidity</span><b id="obDownLiq">--</b></div><div class="depthbar"><span id="downDepthBar"></span></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panelTitle"><h3>Chart giá tài sản</h3><span class="sub">ticker</span></div>
+        <div class="chart"><svg id="assetChart" viewBox="0 0 800 220" preserveAspectRatio="none"></svg></div>
+      </section>
+
+      <section class="panel">
+        <div class="panelTitle"><h3>Timeline quy trình</h3><span class="sub">popup log</span></div>
+        <div class="timeline" id="timeline"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panelTitle"><h3>Log realtime</h3><span class="sub">server</span></div>
+        <div class="logs" id="logs"></div>
+      </section>
+    </aside>
+  </main>
+</div>
+
+<div class="processStack" id="processStack"></div>
+<div class="tabs"><button onclick="setTab('left')">Tổng quan</button><button onclick="setTab('center')">6 Layer</button><button onclick="setTab('right')">Market</button></div>
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const has = (v) => v !== null && v !== undefined && Number.isFinite(Number(v));
+  const money = (v) => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(v || 0));
+  const price = (v) => has(v) ? Number(v).toFixed(2) : '--';
+  const cents = (v) => has(v) ? Number(v).toFixed(2) + '¢' : '--';
+  const safe = (s) => String(s ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+  const setText = (id, val) => { const el = $(id); if (el && el.textContent !== String(val)) el.textContent = String(val); };
+  const setClass = (id, cls) => { const el = $(id); if (el) el.className = cls; };
+  const uptime = (s) => { s = Math.max(0, Number(s || 0)); return [Math.floor(s/3600), Math.floor((s%3600)/60), Math.floor(s%60)].map(x => String(x).padStart(2,'0')).join(':'); };
+
+  let refreshing = false;
+  let assetPts = [];
+  let lastStageHash = '';
+  let popupCount = 0;
+  let lastFeedHash = '';
+  let lastLogHash = '';
+  let lastPipelineHtml = '';
+
+  function showToast(msg) {
+    const el = $('toast');
+    if (!el) return;
+    el.textContent = msg;
+    el.style.display = 'block';
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => { el.style.display = 'none'; }, 4300);
+  }
+
+  async function post(url, body = {}) {
+    try {
+      const r = await fetch(url, { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify(body) });
+      const j = await r.json();
+      showToast(j.message || j.error || JSON.stringify(j));
+      refresh(true);
+    } catch (e) {
+      showToast('Lỗi gửi lệnh: ' + String(e));
+    }
+  }
+
+  function rounds() {
+    const v = $('roundsInput')?.value.trim() || 'unlimited';
+    const n = Number(v);
+    return !v || v === 'unlimited' || !Number.isFinite(n) ? 'unlimited' : n;
+  }
+
+  window.startBot = () => post('/api/control/start', {
+    strategy: $('strategyInput')?.value.trim() || 'gap-six-layer-arb',
+    rounds: rounds(),
+    slotOffset: Number($('slotInput')?.value || 0),
+    prod: $('prodInput')?.value === 'true',
+    alwaysLog: true,
+  });
+  window.pauseBot = () => post('/api/control/pause');
+  window.resumeBot = () => post('/api/control/resume');
+  window.stopBot = () => { if (confirm('Dừng CuaX Trader?')) post('/api/control/stop'); };
+  window.setTab = (tab) => {
+    [['left','leftPane'], ['center','centerPane'], ['right','rightPane']].forEach(([name,id]) => $(id)?.classList.toggle('active', name === tab));
+  };
+
+  function pickMarket(ms) {
+    const a = (ms || []).slice();
+    a.sort((x,y) => ((y.marketOpen ? 1 : 0) - (x.marketOpen ? 1 : 0)) || ((y.state === 'RUNNING' ? 1 : 0) - (x.state === 'RUNNING' ? 1 : 0)) || String(y.slug || '').localeCompare(String(x.slug || '')));
+    return a[0] || null;
+  }
+
+  const icons = ['⌁','◆','✓','⚖','↯','◎'];
+  function normalizeStageState(s) { return ['pass','watch','warn','fail'].includes(s) ? s : 'idle'; }
+  function renderPipeline(pipeline) {
+    const list = (pipeline && pipeline.length ? pipeline : [
+      {label:'01 Scan', state:'watch', detail:'Đang chờ dữ liệu market'},
+      {label:'02 Detect', state:'idle', detail:'Chưa có tín hiệu'},
+      {label:'03 Validate', state:'idle', detail:'Chờ xác nhận'},
+      {label:'04 Size', state:'idle', detail:'Chờ tính shares'},
+      {label:'05 Fill', state:'idle', detail:'Chưa gửi lệnh'},
+      {label:'06 Hedge', state:'idle', detail:'Chưa hedge'},
+    ]).slice(0, 6);
+
+    const html = list.map((x, i) => {
+      const state = normalizeStageState(x.state);
+      const color = state === 'pass' ? 'green' : state === 'warn' ? 'yellow' : state === 'fail' ? 'red' : state === 'watch' ? 'cyan' : 'muted';
+      const label = String(x.label || `0${i+1} Layer`);
+      const parts = label.split(/\s+/);
+      const num = parts[0] || `0${i+1}`;
+      const name = parts.slice(1).join(' ') || label;
+      return `<div class="stage ${state}">
+        <div class="stageTop"><span class="stageNum">${safe(num)}</span><span class="stageIcon">${icons[i] || '•'}</span></div>
+        <div class="stageName">${safe(name)}</div>
+        <div class="stageState ${color}">${safe(String(state).toUpperCase())}</div>
+        <div class="stageDetail">${safe(x.detail || '')}</div>
+      </div>`;
+    }).join('');
+
+    if (html !== lastPipelineHtml) {
+      const el = $('pipeline');
+      if (el) el.innerHTML = html;
+      lastPipelineHtml = html;
+    }
+
+    const hash = list.map(x => `${x.label}|${x.state}|${x.detail}`).join('||');
+    if (lastStageHash && hash !== lastStageHash) {
+      const prev = lastStageHash.split('||');
+      list.forEach((x, i) => {
+        const current = `${x.label}|${x.state}|${x.detail}`;
+        if (current !== prev[i] && normalizeStageState(x.state) !== 'idle') processPopup(x, i);
+      });
+    }
+    lastStageHash = hash;
+
+    renderTimeline(list);
+  }
+
+  function processPopup(stage, index) {
+    const stack = $('processStack');
+    if (!stack) return;
+    const state = normalizeStageState(stage.state);
+    const node = document.createElement('div');
+    node.className = `processToast ${state}`;
+    node.innerHTML = `<h4>${safe(stage.label || 'Quy trình ' + (index+1))}</h4><p>${safe(stage.detail || String(stage.state || 'Đang xử lý'))}</p>`;
+    stack.prepend(node);
+    popupCount++;
+    while (stack.children.length > 4) stack.removeChild(stack.lastElementChild);
+    setTimeout(() => { node.classList.add('out'); setTimeout(() => node.remove(), 260); }, 4200);
+  }
+
+  function renderTimeline(list) {
+    const el = $('timeline');
+    if (!el) return;
+    el.innerHTML = list.map((x, i) => `<div class="timelineItem"><div class="timelineDot">${i+1}</div><div class="timelineBody"><b>${safe(x.label || '')}</b><span>${safe(x.detail || x.state || '')}</span></div></div>`).join('');
+  }
+
+  function badge(type) {
+    const t = String(type || 'info').toLowerCase();
+    return ['buy','sell','resolved','arb','hedge','info'].includes(t) ? t : 'info';
+  }
+
+  function draw(svgId, pts, field) {
+    const svg = $(svgId);
+    if (!svg) return;
+    if (!pts || pts.length < 1) { svg.innerHTML = ''; return; }
+    const vals = pts.map(p => Number(field ? p[field] : p)).filter(Number.isFinite);
+    if (!vals.length) { svg.innerHTML = ''; return; }
+    const W = 800, H = 220, pad = 16;
+    const min = Math.min(...vals), max = Math.max(...vals), range = max - min || 1;
+    const c = vals.map((v, i) => [pad + (W - pad*2) * i / Math.max(1, vals.length - 1), H - pad - ((v - min) / range) * (H - pad*2)]);
+    const grad = 'g' + svgId;
+    const areaD = `M ${c[0][0]} ${H-pad} ` + c.map(x => `L ${x[0]} ${x[1]}`).join(' ') + ` L ${c[c.length-1][0]} ${H-pad} Z`;
+    const lineD = `M ${c[0][0]} ${c[0][1]} ` + c.slice(1).map(x => `L ${x[0]} ${x[1]}`).join(' ');
+    svg.innerHTML = `<defs><linearGradient id="${grad}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ff8a1c" stop-opacity=".5"/><stop offset="100%" stop-color="#4de3ff" stop-opacity=".03"/></linearGradient></defs><path d="${areaD}" fill="url(#${grad})"></path><path d="${lineD}" fill="none" stroke="#ff8a1c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="${c[c.length-1][0]}" cy="${c[c.length-1][1]}" r="5" fill="#4de3ff"></circle>`;
+  }
+
+  function marketBox(m) {
+    const el = $('marketBox');
+    if (!el) return;
+    if (!m) { el.innerHTML = '<div class="muted">Chưa có market hoạt động</div>'; return; }
+    const gapSide = m.side === 'UP' ? 'BUY' : m.side === 'DOWN' ? 'SELL' : (m.arb?.gapSignal || 'FLAT');
+    const rows = [
+      ['Mã market', m.slug],
+      ['Trạng thái', m.state],
+      ['Còn lại', (m.remainingSecs ?? '--') + 's'],
+      ['Mở sau', (m.opensInSecs ?? '--') + 's'],
+      ['Giá hiện tại', m.assetPrice ?? '--'],
+      ['Giá mở cửa', m.priceToBeat ?? '--'],
+      ['Gap', m.gap ?? '--'],
+      ['GAP SIDE', gapSide],
+      ['Vị thế BUY/SELL', `${m.position?.upShares ?? 0} / ${m.position?.downShares ?? 0}`],
+      ['Lệnh chờ B/S', `${m.pendingBuys ?? 0} / ${m.pendingSells ?? 0}`],
+    ];
+    el.innerHTML = rows.map(r => `<div class="line"><span>${safe(r[0])}</span><b>${safe(r[1])}</b></div>`).join('');
+  }
+
+  function depth(a, b) {
+    const mx = Math.max(Number(a || 0), Number(b || 0), 1);
+    const up = $('upDepthBar'), down = $('downDepthBar');
+    if (up) up.style.width = Math.min(100, Number(a || 0) / mx * 100) + '%';
+    if (down) down.style.width = Math.min(100, Number(b || 0) / mx * 100) + '%';
+  }
+
+  function sideText(side) {
+    const s = String(side || '--').toUpperCase();
+    if (s === 'UP') return 'BUY';
+    if (s === 'DOWN') return 'SELL';
+    return s;
+  }
+
+  function updateClock() {
+    setText('clockText', new Date().toLocaleTimeString('vi-VN', { hour12:false }));
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  async function refresh(force = false) {
+    if (refreshing) return;
+    if (document.hidden && !force) return;
+    refreshing = true;
+    try {
+      const r = await fetch('/api/state', { cache:'no-store' });
+      const s = await r.json();
+      const m = pickMarket(s.activeMarkets || []);
+      const arb = m?.arb || {};
+      const c = s.control || {};
+
+      setText('mode', s.mode || 'SIM');
+      setText('asset', (s.asset || 'BTC') + ' • ' + (s.marketWindow || '5m'));
+      setText('strategyPill', s.strategy || 'gap-six-layer-arb');
+      setText('status', c.paused ? 'PAUSED' : (s.status || 'IDLE'));
+      setText('uptime', uptime(s.uptimeSecs));
+      const sessionPnl = Number(s.sessionPnl || 0);
+      const startBalance = Number(s.initialBalance || ((s.balanceHistory && s.balanceHistory[0] && s.balanceHistory[0].balance) || (Number(s.balance || 0) - sessionPnl) || 0));
+      const liveEquity = startBalance + sessionPnl;
+      setText('balance', money(liveEquity));
+      setText('available', money(s.available));
+      setText('pnl', (sessionPnl >= 0 ? '+' : '') + money(sessionPnl));
+      setClass('pnl', sessionPnl >= 0 ? 'green' : 'red');
+      setText('pnlMode', arb.livePnlMode || 'Realtime');
+      setText('lossCounter', money(s.sessionLoss));
+      const total = Number(s.wins || 0) + Number(s.losses || 0);
+      setText('winrate', total ? Math.round(Number(s.wins || 0) * 100 / total) + '%' : '0%');
+      setText('cycles', arb.trades ?? s.completedMarkets ?? 0);
+      setText('minEdge', cents(arb.minEdgeCents));
+      setText('targetShares', arb.targetShares ?? '--');
+      setText('capitalUsed', money(arb.capitalUsed));
+      setText('latency', arb.fillLatencyMs ? Math.round(arb.fillLatencyMs) + 'ms' : '--');
+
+      const gap = sideText(arb.gapSignal || (m?.side === 'UP' ? 'BUY' : m?.side === 'DOWN' ? 'SELL' : '--'));
+      setText('gapSignalBig', gap || '--');
+      setText('gapActionBig', arb.firstLegSide ? '→ mua ' + sideText(arb.firstLegSide) : (arb.waitReason ? '→ chờ' : '→ scan'));
+      setText('gapSignal', gap || '--');
+      setText('firstLeg', sideText(arb.firstLegSide));
+      setText('firstPrice', price(arb.firstLegPrice));
+      setText('hedgeSide', sideText(arb.hedgeSide));
+      setText('hedgeMax', price(arb.hedgeMaxPrice));
+      setText('yesAsk', price(arb.yesAsk));
+      setText('noAsk', price(arb.noAsk));
+      setText('combined', price(arb.sum));
+      setText('edgeBox', cents(arb.edgeCents));
+      setText('arbMode', arb.mode || '--');
+      setText('hedgeAsk', price(arb.hedgeAsk));
+      setText('lockSum', price(arb.lockSum));
+      setText('lockedEdge', cents(arb.lockedEdgeCents));
+      const livePnl = Number(arb.livePnl || 0);
+      setText('livePnl', (livePnl >= 0 ? '+' : '') + money(livePnl));
+      setClass('livePnl', livePnl >= 0 ? 'green' : 'red');
+      setText('lowestHedge', price(arb.lowestHedgeAsk));
+      setText('hedgeRebound', cents(arb.hedgeReboundCents));
+      setText('smartTrigger', arb.smartHedgeTrigger || '--');
+      setText('lastAction', arb.lastAction || '--');
+      setText('waitReason', arb.waitReason || arb.waitReasons || '--');
+      if (arb.riskNote) setText('riskNote', arb.riskNote);
+      setText('obUpAsk', price(arb.yesAsk));
+      setText('obUpBid', price(arb.yesBid));
+      setText('obDownAsk', price(arb.noAsk));
+      setText('obDownBid', price(arb.noBid));
+      setText('obUpLiq', money(arb.yesLiquidity));
+      setText('obDownLiq', money(arb.noLiquidity));
+      depth(arb.yesLiquidity, arb.noLiquidity);
+
+      const scanLabel = arb.mode ? `SCAN • ${safe(String(arb.mode).toUpperCase())}` : 'SCAN • DETECT • VALIDATE';
+      setText('scanMode', scanLabel);
+      setText('scanSub', m?.slug ? `Đang theo dõi ${m.slug}` : 'Đang scan market realtime');
+
+      renderPipeline(m?.pipeline || []);
+      marketBox(m);
+      const equitySeries = (s.balanceHistory || []).slice(-120);
+      equitySeries.push({ time: new Date().toISOString(), balance: liveEquity });
+      draw('equityChart', equitySeries, 'balance');
+      if (has(m?.assetPrice)) { assetPts.push(Number(m.assetPrice)); if (assetPts.length > 70) assetPts.shift(); }
+      draw('assetChart', assetPts);
+
+      const feed = (s.tradeFeed || []).slice(-35);
+      const fHash = feed.map(x => `${x.time}|${x.type}|${x.message}`).join('||');
+      if (fHash !== lastFeedHash) {
+        const el = $('feed');
+        if (el) el.innerHTML = feed.reverse().map(x => `<div class="feedrow"><div><span class="badge ${badge(x.type)}">${safe(String(x.type || 'info').toUpperCase())}</span><div style="margin-top:7px">${safe(x.message)}</div></div><small>${new Date(x.time).toLocaleTimeString('vi-VN',{hour12:false})}</small></div>`).join('') || '<div class="muted">Chưa có feed</div>';
+        lastFeedHash = fHash;
+      }
+
+      const logs = (s.recentLogs || []).slice(-60);
+      const lHash = logs.map(x => `${x.time}|${x.msg}`).join('||');
+      if (lHash !== lastLogHash) {
+        const el = $('logs');
+        if (el) el.innerHTML = logs.reverse().map(x => `<div class="logrow"><div class="mono">${safe(x.msg)}</div><small>${new Date(x.time).toLocaleTimeString('vi-VN',{hour12:false})}</small></div>`).join('') || '<div class="muted">Chưa có log</div>';
+        lastLogHash = lHash;
+      }
+    } catch (e) {
+      setText('status', 'LỖI DASHBOARD');
+      console.error(e);
+    } finally {
+      refreshing = false;
+    }
+  }
+
+  refresh(true);
+  setInterval(() => refresh(false), 1500);
+})();
+</script>
+</body>
+</html>
